@@ -19,7 +19,16 @@ def scrape_stock(stock_code):
     ]
 
     df = pd.DataFrame(columns=name_attribute, data=target_price)
-    
+
+####################################################
+import os
+
+# 确保 'data' 目录存在
+os.makedirs('data', exist_ok=True)
+
+# 在 'data' 目录中创建或更新文件
+with open('data/example.txt', 'w') as f:
+    f.write("Some data")
     # 確保 data 目錄存在
     os.makedirs('data', exist_ok=True)
     
