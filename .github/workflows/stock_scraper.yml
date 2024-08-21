@@ -2,20 +2,20 @@ name: Stock Data Scraper
 
 on:
   schedule:
-    - cron: '0 2 * * 1-5'
-  workflow_dispatch:
+    - cron: '0 2 * * 1-5'  # 在工作日（週一到週五）的每天凌晨2點運行
+  workflow_dispatch:  # 允許手動觸發
 
 jobs:
   scrape:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout repository
+      uses: actions/checkout@v3
     
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: '3.x'
-    
     
     - name: Install dependencies
       run: |
@@ -27,12 +27,26 @@ jobs:
       run: |
         python -V  # 輸出 Python 版本
         ls -la  # 列出當前目錄內容
+        echo "Content of tw_stock_go.py:"
         cat tw_stock_go.py  # 顯示腳本內容
+        echo "Python system path:"
+        python -c "import sys; print(sys.path)"
+        echo "Running tw_stock_go.py:"
         python tw_stock_go.py
-      
+      continue-on-error: true
+    
+    - name: Display Python error
+      if: failure()
+      run: |
+        echo "Last 20 lines of error output:"
+        python tw_stock_go.py 2>&1 | tail -n 20
+    
     - name: Check data directory
       if: always()
       run: |
+        echo "Contents of current directory:"
+        ls -la
+        echo "Contents of data directory (if exists):"
         ls -la data || echo "data directory does not exist"
         
     - name: Commit and push if changed
