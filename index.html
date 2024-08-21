@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>股票資料查看器</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; margin: 0; padding: 20px; }
+        h1, h2 { color: #333; }
+        #lastUpdated { font-style: italic; margin-bottom: 20px; }
+        table { border-collapse: collapse; width: 100%; margin-bottom: 30px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <h1>股票資料查看器</h1>
+    <div id="lastUpdated"></div>
+    <div id="stockData"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <script>
+        const stocks = ['0050', '2330', '2317'];  // 對應您爬蟲的股票列表
+        
+        function fetchLastUpdated() {
+            fetch('data/last_updated.txt')
+                .then(response => response.text())
+                .then(date => {
+                    document.getElementById('lastUpdated').textContent = `最後更新時間：${date}`;
+                });
+        }
+
+        function fetchStockData(stock) {
+            Papa.parse(`data/${stock}.csv`, {
+                download: true,
+                header: true,
+                complete: function(results) {
+                    displayStockData(stock, results.data);
+                }
+            });
+        }
+
+        function displayStockData(stock, data) {
+            const container = document.getElementById('stockData');
+            const table = document.createElement('table');
+            const header = table.createTHead();
+            const body = table.createTBody();
+
+            // 創建表頭
+            const headerRow = header.insertRow();
+            Object.keys(data[0]).forEach(key => {
+                const th = document.createElement('th');
+                th.textContent = key;
+                headerRow.appendChild(th);
+            });
+
+            // 填充數據
+            data.forEach(row => {
+                const tr = body.insertRow();
+                Object.values(row).forEach(value => {
+                    const td = tr.insertCell();
+                    td.textContent = value;
+                });
+            });
+
+            const title = document.createElement('h2');
+            title.textContent = `股票代碼：${stock}`;
+            container.appendChild(title);
+            container.appendChild(table);
+        }
+
+        fetchLastUpdated();
+        stocks.forEach(fetchStockData);
+    </script>
+</body>
+</html>
