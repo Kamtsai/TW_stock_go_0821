@@ -21,43 +21,20 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install twstock pandas
-        pip list  # 列出所有安裝的包
     
     - name: Run scraper
-      run: |
-        python -V  # 輸出 Python 版本
-        ls -la  # 列出當前目錄內容
-        echo "Content of tw_stock_go.py:"
-        cat tw_stock_go.py  # 顯示腳本內容
-        echo "Python system path:"
-        python -c "import sys; print(sys.path)"
-        echo "Running tw_stock_go.py:"
-        python tw_stock_go.py
-      continue-on-error: true
+      run: python tw_stock_go.py
     
     - name: Check file system
-      if: always()
       run: |
         echo "Current directory contents:"
         ls -la
-        echo "Root directory contents:"
-        ls -la /
-        echo "Home directory contents:"
-        ls -la ~
-        echo "Data directory contents (if exists):"
+        echo "Data directory contents:"
         ls -la data || echo "data directory does not exist"
     
-    - name: Display Python error
-      if: failure()
-      run: |
-        echo "Last 20 lines of error output:"
-        python tw_stock_go.py 2>&1 | tail -n 20
-    
     - name: Commit and push if changed
-      if: success()
       run: |
         git config --global user.email "action@github.com"
         git config --global user.name "GitHub Action"
-        git status
-        git add -A
-        git diff --staged --quiet || (git commit -m "Update stock data" && git push) || echo "No changes to commit"
+        git add data
+        git diff --quiet && git diff --staged --quiet || (git commit -m "Update stock data" && git push)
