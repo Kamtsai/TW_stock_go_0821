@@ -35,24 +35,29 @@ jobs:
         python tw_stock_go.py
       continue-on-error: true
     
+    - name: Check file system
+      if: always()
+      run: |
+        echo "Current directory contents:"
+        ls -la
+        echo "Root directory contents:"
+        ls -la /
+        echo "Home directory contents:"
+        ls -la ~
+        echo "Data directory contents (if exists):"
+        ls -la data || echo "data directory does not exist"
+    
     - name: Display Python error
       if: failure()
       run: |
         echo "Last 20 lines of error output:"
         python tw_stock_go.py 2>&1 | tail -n 20
     
-    - name: Check data directory
-      if: always()
-      run: |
-        echo "Contents of current directory:"
-        ls -la
-        echo "Contents of data directory (if exists):"
-        ls -la data || echo "data directory does not exist"
-        
     - name: Commit and push if changed
       if: success()
       run: |
         git config --global user.email "action@github.com"
         git config --global user.name "GitHub Action"
-        git add data
-        git diff --quiet && git diff --staged --quiet || (git commit -m "Update stock data" && git push)
+        git status
+        git add -A
+        git diff --staged --quiet || (git commit -m "Update stock data" && git push) || echo "No changes to commit"
